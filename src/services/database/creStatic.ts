@@ -7,6 +7,6 @@ export const VALID_CREDENTIALS = {
     id: "1",
     name: "Administrador",
     email: "admin@marena.com",
-    role: "admin", // Asegúrate que coincida con el tipo 'admin' | 'user' de tu interfaz User
+    role: "admin" as const, // Asegúrate que coincida con el tipo 'admin' | 'user' de tu interfaz User
   },
 };

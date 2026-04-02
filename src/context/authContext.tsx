@@ -1,8 +1,8 @@
 // contexts/AuthContext.tsx
 import React, { createContext, ReactNode, useState } from "react";
 
-import { AuthContextType } from "@/src/types/AuthContext";
-import { User } from "@/src/types/User";
+import { AuthContextType } from "@/src/models/types/AuthContext";
+import { User } from "@/src/models/types/User";
 
 import { VALID_CREDENTIALS } from "../services/database/creStatic";
 
@@ -13,6 +13,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   const signIn = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isLoading,
+        isAuthenticating,
         isAuthenticated: !!user,
         signIn,
         signOut,

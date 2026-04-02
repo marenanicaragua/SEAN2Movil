@@ -6,31 +6,49 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { ActivityIndicator, View, Text } from "react-native";
+import { useEffect } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/src/hooks/use-color-scheme";
 import { AuthProvider } from "@/src/context/authContext";
 import { useAuth } from "@/src/hooks/useAuth";
 
-// Componente que maneja la navegación según autenticación
-function RootLayoutNav() {
-  const { isAuthenticated, isLoading } = useAuth();
+SplashScreen.preventAutoHideAsync();
 
-  if (isLoading) {
-    // Puedes mostrar un splash screen aquí
-    return null;
-  }
+function LoadingScreen({ message = "Cargando..." }: { message?: string }) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+      }}
+    >
+      <ActivityIndicator size="large" color="#007AFF" />
+      <Text style={{ marginTop: 20, color: "#666", fontSize: 14 }}>
+        {message}
+      </Text>
+    </View>
+  );
+}
+
+function RootLayoutNav() {
+  const { isAuthenticated, isLoading, isAuthenticating } = useAuth();
+
+  if (isLoading) return <LoadingScreen message="Iniciando aplicación..." />;
+  if (isAuthenticating) return <LoadingScreen message="Iniciando sesión..." />;
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {!isAuthenticated ? (
-        // No autenticado: mostrar pantalla de login
         <Stack.Screen name="(auth)" />
       ) : (
-        // Autenticado: mostrar tabs
         <Stack.Screen name="(tabs)" />
       )}
-      {/* Modal siempre disponible (opcional) */}
       <Stack.Screen
         name="modal"
         options={{ presentation: "modal", title: "Modal" }}
@@ -39,9 +57,24 @@ function RootLayoutNav() {
   );
 }
 
-// Layout principal con el provider y tema
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  const [fontsLoaded] = useFonts({
+    "Manrope-Regular": require("@/assets/fonts/ManropeBody.ttf"),
+    "Manrope-Medium": require("@/assets/fonts/ManropeHead.ttf"),
+    "Manrope-Bold": require("@/assets/fonts/ManropeSubHead.ttf"),
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
