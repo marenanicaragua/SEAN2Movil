@@ -65,9 +65,9 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   const [fontsLoaded] = useFonts({
-    "Manrope-Regular": require("@/assets/fonts/ManropeBody.ttf"),
-    "Manrope-Medium": require("@/assets/fonts/ManropeHead.ttf"),
-    "Manrope-Bold": require("@/assets/fonts/ManropeSubHead.ttf"),
+    "Manrope-Light": require("@/assets/fonts/Manrope-Light.ttf"),
+    "Manrope-Regular": require("@/assets/fonts/Manrope-Regular.ttf"),
+    "Manrope-Bold": require("@/assets/fonts/Manrope-Bold.ttf"),
   });
 
   useEffect(() => {

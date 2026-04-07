@@ -1,7 +1,8 @@
-import { ThemedText } from "@/src/components/ui/ThemedText";
-import { ThemedView } from "@/src/components/ui/ThemedView";
+import { HeaderBar } from "@/src/components/layout/HeaderBar";
 import { ThemedButton } from "@/src/components/ui/ThemedButton";
 import { ThemedInput } from "@/src/components/ui/ThemedInput";
+import { ThemedText } from "@/src/components/ui/ThemedText";
+import { ThemedView } from "@/src/components/ui/ThemedView";
 import { useAuth } from "@/src/hooks/useAuth";
 import React, { useState } from "react";
 import {
@@ -11,9 +12,13 @@ import {
   StyleSheet,
 } from "react-native";
 
-import { PassI } from "@/assets/icons/PassI";
 import { MailI } from "@/assets/icons/MailI";
+import { PassI } from "@/assets/icons/PassI";
 import { SendI } from "@/assets/icons/SendI";
+
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -44,41 +49,47 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
     >
+      <HeaderBar />
       <ThemedView style={styles.container}>
         <ThemedText type="title" style={styles.title}>
-          Marena Móvil
+          Bienvenido a Transporte Marena
         </ThemedText>
         <ThemedText style={styles.subtitle}>
-          Ingrese sus credenciales para continuar
+          Ingrese sus credenciales para continuar por favor
         </ThemedText>
 
-        <ThemedInput
-          placeholder="Correo electrónico (admin@marena.com)"
-          placeholderTextColor="#888"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          icon={MailI}
-          keyboardType="email-address"
-        />
+        <ThemedView variant="secondary" style={styles.card}>
+          <ThemedInput
+            label="Correo Electrónico"
+            placeholder="admin@marena.com"
+            placeholderTextColor="#888"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            icon={MailI}
+            keyboardType="email-address"
+          />
 
-        <ThemedInput
-          placeholder="Contraseña"
-          placeholderTextColor="#888"
-          value={password}
-          onChangeText={setPassword}
-          icon={PassI}
-          secureTextEntry
-        />
+          <ThemedInput
+            label="Contraseña"
+            placeholder="Ingrese su contraseña"
+            placeholderTextColor="#888"
+            value={password}
+            onChangeText={setPassword}
+            icon={PassI}
+            secureTextEntry
+          />
 
-        <ThemedButton
-          title="Iniciar Sesión"
-          onPress={handleLogin}
-          loading={isLoading}
-          icon={SendI}
-          iconPosition="right"
-          style={styles.button}
-        />
+          <ThemedButton
+            title="Iniciar Sesión"
+            onPress={handleLogin}
+            loading={isLoading}
+            icon={SendI}
+            iconPosition="right"
+            size="medium"
+            style={styles.button}
+          />
+        </ThemedView>
       </ThemedView>
     </KeyboardAvoidingView>
   );
@@ -87,21 +98,36 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 30,
-    justifyContent: "center",
+    padding: width * 0.08,
+    alignItems: "center",
   },
   title: {
-    marginBottom: 10,
-    textAlign: "center",
+    marginVertical: height * 0.03,
+    marginHorizontal: width * 0.05,
+    textAlign: "left",
+    fontFamily: "Manrope-Bold",
   },
   subtitle: {
-    marginBottom: 30,
-    textAlign: "center",
-    opacity: 0.7,
+    marginTop: height * 0.01,
+    marginBottom: height * 0.03,
+    marginHorizontal: width * 0.05,
+    textAlign: "left",
+    opacity: 0.6,
+  },
+  card: {
+    width: width * 0.9,
+    padding: 20,
+    borderRadius: 25,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
   button: {
-    marginTop: 10,
+    marginTop: 20,
     borderRadius: 25,
-    height: 55, // Mantenemos el alto para consistencia con los inputs
+    width: "100%",
   },
 });

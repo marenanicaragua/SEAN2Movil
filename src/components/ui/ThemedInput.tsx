@@ -1,27 +1,31 @@
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { ThemedInputProps } from "@/src/models/types/ThemedInput";
 import React from "react";
-import {
-  StyleSheet,
-  TextInput,
-  View,
-  type StyleProp,
-  type TextInputProps,
-  type ViewStyle,
-} from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
+import { ThemedText } from "./ThemedText";
+
+import { Dimensions } from "react-native";
+
+const { width, height } = Dimensions.get("window");
+
+// Extendemos la interfaz localmente para incluir el label si no está en ThemedInputProps
+interface Props extends ThemedInputProps {
+  label?: string;
+}
 
 export function ThemedInput({
   style,
   lightColor,
   darkColor,
   icon: Icon,
+  label,
   containerStyle,
   ...rest
-}: ThemedInputProps) {
+}: Props) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
-    "backgroundSecondary",
+    "background",
   );
   const borderColor = useThemeColor(
     { light: lightColor, dark: darkColor },
@@ -37,43 +41,51 @@ export function ThemedInput({
   );
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor, borderColor },
-        containerStyle,
-      ]}
-    >
-      {Icon && (
-        <View style={styles.icon}>
-          <Icon color={iconColor as string} size={20} />
-        </View>
+    <View style={[styles.wrapper, containerStyle]}>
+      {label && (
+        <ThemedText type="label" style={styles.labelText}>
+          {label}
+        </ThemedText>
       )}
-      <TextInput
-        style={[styles.input, { color }, style]}
-        placeholderTextColor={placeholderColor}
-        {...rest}
-      />
+      <View style={[styles.container, { backgroundColor, borderColor }]}>
+        {Icon && (
+          <View style={styles.icon}>
+            <Icon color={iconColor as string} size={20} />
+          </View>
+        )}
+        <TextInput
+          style={[styles.input, { color }, style]}
+          placeholderTextColor={placeholderColor}
+          {...rest}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    width: "100%",
+    marginVertical: height * 0.02,
+  },
+  labelText: {
+    marginLeft: 4, // Un pequeño margen para alinear con el borde redondeado
+  },
   container: {
     flexDirection: "row",
     alignItems: "center",
-    height: 55,
-    borderWidth: 1,
-    borderRadius: 25,
+    height: height * 0.06,
+    borderWidth: width * 0.005,
+    borderRadius: width * 0.08,
     paddingHorizontal: 12,
-    marginBottom: 16,
+    paddingVertical: height * 0.027,
   },
   icon: {
     marginRight: 10,
   },
   input: {
     flex: 1,
-    fontSize: 16,
-    height: "100%",
+    fontSize: 14,
+    height: height * 0.1,
   },
 });

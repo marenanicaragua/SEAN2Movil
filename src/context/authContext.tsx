@@ -1,4 +1,5 @@
 // contexts/AuthContext.tsx
+import { router } from "expo-router";
 import React, { createContext, ReactNode, useState } from "react";
 
 import { AuthContextType } from "@/src/models/types/AuthContext";
@@ -21,12 +22,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Simular delay de red (como si llamara a una API)
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Validar credenciales
-    if (
-      email === VALID_CREDENTIALS.email &&
-      password === VALID_CREDENTIALS.password
-    ) {
-      setUser(VALID_CREDENTIALS.userData);
+    // Validar credenciales buscando en el array de objetos
+    const credential = VALID_CREDENTIALS.find(
+      (c) => c.email === email && c.password === password,
+    );
+
+    if (credential) {
+      setUser(credential.userData);
       setIsLoading(false);
       return true;
     }
@@ -37,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = () => {
     setUser(null);
+    router.replace("/login");
   };
 
   return (
