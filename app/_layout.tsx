@@ -4,35 +4,39 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, View, Text } from "react-native";
-import { useEffect } from "react";
-import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { ActivityIndicator } from "react-native";
 import "react-native-reanimated";
 
-import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { ThemedText } from "@/src/components/ui/ThemedText";
+import { ThemedView } from "@/src/components/ui/ThemedView";
 import { AuthProvider } from "@/src/context/authContext";
+import { useColorScheme } from "@/src/hooks/use-color-scheme";
+import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { useAuth } from "@/src/hooks/useAuth";
 
 SplashScreen.preventAutoHideAsync();
 
 function LoadingScreen({ message = "Cargando..." }: { message?: string }) {
+  const primaryColor = useThemeColor({}, "primary");
+
   return (
-    <View
+    <ThemedView
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#fff",
       }}
     >
-      <ActivityIndicator size="large" color="#007AFF" />
-      <Text style={{ marginTop: 20, color: "#666", fontSize: 14 }}>
+      <ActivityIndicator size="large" color={primaryColor} />
+      <ThemedText type="bodySmall" style={{ marginTop: 20 }}>
         {message}
-      </Text>
-    </View>
+      </ThemedText>
+    </ThemedView>
   );
 }
 
