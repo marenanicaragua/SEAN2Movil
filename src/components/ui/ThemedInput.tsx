@@ -56,6 +56,7 @@ export function ThemedInput({
         <TextInput
           style={[styles.input, { color }, style]}
           placeholderTextColor={placeholderColor}
+          textAlignVertical={rest.multiline ? "top" : "center"}
           {...rest}
         />
       </View>
@@ -66,7 +67,8 @@ export function ThemedInput({
 const styles = StyleSheet.create({
   wrapper: {
     width: "100%",
-    marginVertical: height * 0.02,
+    marginVertical: 10,
+    // Eliminado paddingVertical para depender del marginBottom de formInput
   },
   labelText: {
     marginLeft: 4, // Un pequeño margen para alinear con el borde redondeado
@@ -74,11 +76,10 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    height: height * 0.06,
+    minHeight: 50, // Altura mínima en lugar de fija
     borderWidth: width * 0.005,
-    borderRadius: width * 0.08,
+    borderRadius: width * 0.1, // Un radio más moderado para que no se corte el texto
     paddingHorizontal: 12,
-    paddingVertical: height * 0.027,
   },
   icon: {
     marginRight: 10,
@@ -86,6 +87,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    height: height * 0.1,
+    paddingVertical: 10,
+    fontFamily: "Manrope-Regular",
   },
 });

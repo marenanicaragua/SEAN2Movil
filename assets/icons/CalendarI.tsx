@@ -1,6 +1,6 @@
 import Svg, { Path } from "react-native-svg";
 
-export const InfoI = ({
+export const CalendarI = ({
   color = "currentColor",
   size = 24,
 }: {

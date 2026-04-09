@@ -3,12 +3,14 @@ import { ThemedButton } from "@/src/components/ui/ThemedButton";
 import { ThemedInput } from "@/src/components/ui/ThemedInput";
 import { ThemedText } from "@/src/components/ui/ThemedText";
 import { ThemedView } from "@/src/components/ui/ThemedView";
+import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { useAuth } from "@/src/hooks/useAuth";
 import React, { useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
 } from "react-native";
 
@@ -20,20 +22,22 @@ import { Dimensions } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
+
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { signIn, isLoading } = useAuth();
-
+  const backgroundColor = useThemeColor({}, "background");
+  
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Atención", "Por favor complete todos los campos");
       return;
     }
-
+    
     // Intentamos iniciar sesión con las credenciales del contexto
     const success = await signIn(email.trim(), password);
-
+    
     if (!success) {
       Alert.alert(
         "Error",
@@ -44,60 +48,71 @@ export default function LoginScreen() {
     // y nos redirigirá automáticamente a (tabs).
   };
 
+  const shadowColor = useThemeColor({}, "text");
+  
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1, backgroundColor }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
     >
       <HeaderBar />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>
-          Bienvenido a Transporte Marena
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Ingrese sus credenciales para continuar por favor
-        </ThemedText>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <ThemedView style={styles.container}>
+          <ThemedText type="title" style={styles.title}>
+            Bienvenido a Transporte Marena
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Ingrese sus credenciales para continuar por favor
+          </ThemedText>
 
-        <ThemedView variant="secondary" style={styles.card}>
-          <ThemedInput
-            label="Correo Electrónico"
-            placeholder="admin@marena.com"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            icon={MailI}
-            keyboardType="email-address"
-          />
+          <ThemedView
+            variant="secondary"
+            style={[styles.card, { boxShadow: `0px 5px 15px ${shadowColor}33` }]}
+          >
+            <ThemedInput
+              label="Correo Electrónico"
+              placeholder="admin@marena.com"
+              placeholderTextColor="#888"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              icon={MailI}
+              keyboardType="email-address"
+            />
 
-          <ThemedInput
-            label="Contraseña"
-            placeholder="Ingrese su contraseña"
-            placeholderTextColor="#888"
-            value={password}
-            onChangeText={setPassword}
-            icon={PassI}
-            secureTextEntry
-          />
+            <ThemedInput
+              label="Contraseña"
+              placeholder="Ingrese su contraseña"
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              icon={PassI}
+              secureTextEntry
+            />
 
-          <ThemedButton
-            title="Iniciar Sesión"
-            onPress={handleLogin}
-            loading={isLoading}
-            icon={SendI}
-            iconPosition="right"
-            size="medium"
-            style={styles.button}
-          />
+            <ThemedButton
+              title="Iniciar Sesión"
+              onPress={handleLogin}
+              loading={isLoading}
+              icon={SendI}
+              iconPosition="right"
+              size="medium"
+              style={styles.button}
+            />
+          </ThemedView>
         </ThemedView>
-      </ThemedView>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: width * 0.08,
     alignItems: "center",
   },
@@ -119,11 +134,6 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 25,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
   },
   button: {
     marginTop: 20,

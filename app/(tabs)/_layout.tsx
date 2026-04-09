@@ -1,32 +1,31 @@
 import { Tabs } from "expo-router";
 import React from "react";
 
-import { HapticTab } from "@/src/components/haptic-tab";
-import { useColorScheme } from "@/src/hooks/use-color-scheme";
-import { Colors } from "@/src/models/constants/theme";
+import { TabBar } from "@/src/components/layout/TabBar"; 
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
 
   return (
     <Tabs
+      tabBar={(props) => <TabBar {...props} />} 
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].primary,
         headerShown: false,
-        tabBarButton: HapticTab,
+        tabBarHideOnKeyboard: true,
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-        }}
+      <Tabs.Screen 
+        name="index" 
+        options={{ 
+          title: "Inicio",
+          tabBarLabel: "Inicio",
+        }} 
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-        }}
+      <Tabs.Screen 
+        name="explore" 
+        options={{ 
+          title: "Explorar",
+          tabBarLabel: "Explorar",
+        }} 
       />
     </Tabs>
   );

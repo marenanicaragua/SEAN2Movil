@@ -5,7 +5,6 @@ import { ExternalLink } from "@/src/components/external-link";
 import ParallaxScrollView from "@/src/components/parallax-scroll-view";
 import { ThemedText } from "@/src/components/ui/ThemedText";
 import { ThemedView } from "@/src/components/ui/ThemedView";
-import { Collapsible } from "@/src/components/ui/collapsible";
 
 export default function TabTwoScreen() {
   return (
@@ -19,74 +18,7 @@ export default function TabTwoScreen() {
       <ThemedText>
         This app includes example code to help you get started.
       </ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{" "}
-          <ThemedText type="subtitle">app/(tabs)/index.tsx</ThemedText> and{" "}
-          <ThemedText type="subtitle">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in{" "}
-          <ThemedText type="subtitle">app/(tabs)/_layout.tsx</ThemedText> sets
-          up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the
-          web version, press <ThemedText type="subtitle">w</ThemedText> in the
-          terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the{" "}
-          <ThemedText type="subtitle">@2x</ThemedText> and{" "}
-          <ThemedText type="subtitle">@3x</ThemedText> suffixes to provide files
-          for different screen densities
-        </ThemedText>
-        <Image
-          source={require("@/assets/images/react-logo.png")}
-          style={{ width: 100, height: 100, alignSelf: "center" }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{" "}
-          <ThemedText type="subtitle">useColorScheme()</ThemedText> hook lets
-          you inspect what the user&apos;s current color scheme is, and so you
-          can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{" "}
-          <ThemedText type="subtitle">components/HelloWave.tsx</ThemedText>{" "}
-          component uses the powerful{" "}
-          <ThemedText type="subtitle">react-native-reanimated</ThemedText>{" "}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The{" "}
-              <ThemedText type="subtitle">
-                components/ParallaxScrollView.tsx
-              </ThemedText>{" "}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
+      
     </ParallaxScrollView>
   );
 }

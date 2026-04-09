@@ -53,10 +53,6 @@ function RootLayoutNav() {
       ) : (
         <Stack.Screen name="(tabs)" />
       )}
-      <Stack.Screen
-        name="modal"
-        options={{ presentation: "modal", title: "Modal" }}
-      />
     </Stack>
   );
 }
