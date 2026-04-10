@@ -25,7 +25,7 @@ interface TabBarButtonProps {
 // 📌 ARRAY DE ICONOS - Sustituye los nombres por tus iconos reales
 const ICON_ARRAY: { name: string; component: IconComponent }[] = [
   { name: 'index', component: HomeI },        // Pantalla de inicio
-  { name: 'explore', component: RegisterI },    // Pantalla de solicitud
+  { name: 'Registro', component: RegisterI },    // Pantalla de solicitud
    // Pantalla de perfil
   // Agrega más rutas según necesites
   // { name: 'configuracion', component: SettingsIcon },

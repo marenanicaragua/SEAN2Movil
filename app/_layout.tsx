@@ -47,12 +47,24 @@ function RootLayoutNav() {
   if (isAuthenticating) return <LoadingScreen message="Iniciando sesión..." />;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ 
+      headerShown: false,
+      
+      animation: "slide_from_bottom",
+      animationDuration: 300,
+      }}>
       {!isAuthenticated ? (
         <Stack.Screen name="(auth)" />
       ) : (
         <Stack.Screen name="(tabs)" />
       )}
+      <Stack.Screen
+        name="modal"
+        options={{
+          presentation: "transparentModal",
+          animation: "slide_from_bottom",
+        }}
+      />
     </Stack>
   );
 }

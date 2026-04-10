@@ -21,10 +21,10 @@ export default function TabLayout() {
         }} 
       />
       <Tabs.Screen 
-        name="explore" 
+        name="Registro" 
         options={{ 
-          title: "Explorar",
-          tabBarLabel: "Explorar",
+          title: "Registro",
+          tabBarLabel: "Registro",
         }} 
       />
     </Tabs>

@@ -48,7 +48,7 @@ export default function LoginScreen() {
     // y nos redirigirá automáticamente a (tabs).
   };
 
-  const shadowColor = useThemeColor({}, "text");
+  const shadowColor = useThemeColor({}, "primary");
   
   return (
     <KeyboardAvoidingView
@@ -106,6 +106,9 @@ export default function LoginScreen() {
             />
           </ThemedView>
         </ThemedView>
+          <ThemedText type="body" style={styles.footerText}>
+            Si tiene problema algun con su usuario o contraseña solicite ayuda al area de desarrollo.
+          </ThemedText>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -140,4 +143,13 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: "100%",
   },
+  footerText: {
+    marginVertical: height * 0.03,
+    marginHorizontal: width * 0.05,
+    textAlign: "center",
+    opacity: 0.4,
+    fontFamily: "Manrope-Light",
+    fontSize: width * 0.038,
+    lineHeight: 15,
+  }
 });

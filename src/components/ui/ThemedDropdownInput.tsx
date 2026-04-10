@@ -1,13 +1,12 @@
 import { ChevronDownI } from "@/assets/icons/ChevronDownI"; // Importamos el nuevo icono
 import { useThemeColor } from "@/src/hooks/use-theme-color";
-import React, { type ComponentType, useState } from "react";
+import { useRouter } from "expo-router";
+import React, { type ComponentType, useEffect } from "react";
 import {
+  DeviceEventEmitter,
   Dimensions,
-  FlatList,
-  Modal,
   Pressable,
   StyleSheet,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { ThemedText } from "./ThemedText";
@@ -42,7 +41,17 @@ export function ThemedDropdownInput({
   placeholder,
   options,
 }: ThemedDropdownInputProps) {
-  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const subscription = DeviceEventEmitter.addListener(
+      "onValueSelected",
+      (data) => {
+        if (data.id === label) onChange(data.value);
+      },
+    );
+    return () => subscription.remove();
+  }, [label, onChange]);
 
   const textColor = useThemeColor(
     { light: lightColor, dark: darkColor },
@@ -69,24 +78,16 @@ export function ThemedDropdownInput({
   const selectedLabel =
     options.find((option) => option.value === value)?.label || placeholder;
 
-  const renderOption = ({ item }: { item: DropdownOption }) => (
-    <TouchableOpacity
-      style={styles.optionItem}
-      onPress={() => {
-        onChange(item.value);
-        setModalVisible(false);
-      }}
-    >
-      <ThemedText
-        style={[
-          styles.optionText,
-          { color: item.value === value ? primaryColor : textColor },
-        ]}
-      >
-        {item.label}
-      </ThemedText>
-    </TouchableOpacity>
-  );
+  const handleOpenModal = () => {
+    router.push({
+      pathname: "/modal",
+      params: {
+        title: label,
+        options: JSON.stringify(options),
+        selectedValue: value,
+      },
+    });
+  };
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
@@ -101,7 +102,7 @@ export function ThemedDropdownInput({
           { backgroundColor, borderColor },
           pressed && { opacity: 0.7 },
         ]}
-        onPress={() => setModalVisible(true)}
+        onPress={handleOpenModal}
       >
         {Icon && (
           <View style={styles.iconLeft}>
@@ -120,27 +121,6 @@ export function ThemedDropdownInput({
           <ChevronDownI color={iconColor as string} size={20} />
         </View>
       </Pressable>
-
-      <Modal
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-        animationType="fade"
-      >
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setModalVisible(false)}
-        >
-          <View style={[styles.modalContent, { backgroundColor }]}>
-            <FlatList
-              data={options}
-              renderItem={renderOption}
-              keyExtractor={(item) => item.value}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
-        </Pressable>
-      </Modal>
     </View>
   );
 }
@@ -170,33 +150,6 @@ const styles = StyleSheet.create({
   inputValue: {
     flex: 1,
     fontSize: 14,
-    fontFamily: "Manrope-Regular",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    width: width * 0.8,
-    maxHeight: height * 0.5,
-    borderRadius: 10,
-    paddingVertical: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  optionItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(0,0,0,0.1)", // Separador ligero
-  },
-  optionText: {
-    fontSize: 16,
     fontFamily: "Manrope-Regular",
   },
 });

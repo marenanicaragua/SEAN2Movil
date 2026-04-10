@@ -121,7 +121,7 @@ export function HomeContent() {
     "": [], // Default empty array if no department is selected or found
   };
 
-  const shadowColor = useThemeColor({}, "text");
+  const shadowColor = useThemeColor({}, "primary");
 
   // Estado para el departamento seleccionado (para filtrar municipios)
   const [selectedDepartment, setSelectedDepartment] = useState("");
@@ -186,7 +186,7 @@ export function HomeContent() {
   };
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined }
       style={{ flex: 1, backgroundColor }}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
@@ -194,7 +194,7 @@ export function HomeContent() {
 
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -476,7 +476,7 @@ export function HomeContent() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1, // Asegura que el ScrollView ocupe todo el espacio disponible
-    marginBottom: 70, // Aumentado para asegurar que el botón de login no quede oculto
+    paddingBottom: 80
   },
   content: {
     alignItems: "center",
