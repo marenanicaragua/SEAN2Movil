@@ -2,6 +2,7 @@ import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { ThemedInputProps } from "@/src/models/types/ThemedInput";
 import React from "react";
 import { StyleSheet, TextInput, View } from "react-native";
+import Animated, { BounceIn, ZoomOut } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
 
 import { Dimensions } from "react-native";
@@ -11,6 +12,9 @@ const { width, height } = Dimensions.get("window");
 // Extendemos la interfaz localmente para incluir el label si no está en ThemedInputProps
 interface Props extends ThemedInputProps {
   label?: string;
+  error?: string;
+  entering?: any; // Tipado simple para Reanimated
+  exiting?: any;
 }
 
 export function ThemedInput({
@@ -20,6 +24,9 @@ export function ThemedInput({
   icon: Icon,
   label,
   containerStyle,
+  error,
+  entering = BounceIn.duration(300),
+  exiting = ZoomOut.duration(300),
   ...rest
 }: Props) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
@@ -38,6 +45,10 @@ export function ThemedInput({
   const placeholderColor = useThemeColor(
     { light: lightColor, dark: darkColor },
     "textSecondary",
+  );
+  const errorColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "error",
   );
 
   return (
@@ -60,6 +71,20 @@ export function ThemedInput({
           {...rest}
         />
       </View>
+      {error && (
+        <Animated.View
+          entering={entering}
+          exiting={exiting}
+          style={styles.errorContainer}
+        >
+          <ThemedText
+            type="caption"
+            style={[styles.errorText, { color: errorColor }]}
+          >
+            {error}
+          </ThemedText>
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -88,6 +113,13 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     paddingVertical: 10,
+    fontFamily: "Manrope-Regular",
+  },
+  errorContainer: {
+    marginTop: 4,
+    paddingLeft: 12,
+  },
+  errorText: {
     fontFamily: "Manrope-Regular",
   },
 });

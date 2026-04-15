@@ -1,14 +1,15 @@
 // src/components/ui/ThemedView.tsx
 import { useThemeColor } from "@/src/hooks/use-theme-color";
-import Animated from "react-native-reanimated";
 import { type ViewProps } from "react-native";
+import Animated from "react-native-reanimated";
 
 export type ThemedViewProps = ViewProps & {
   lightColor?: string;
   darkColor?: string;
   variant?: "default" | "secondary" | "primary";
   padding?: number;
-  enteringAnimation?: boolean;
+  entering?: any;
+  exiting?: any;
 };
 
 export function ThemedView({
@@ -17,10 +18,10 @@ export function ThemedView({
   darkColor,
   variant = "default",
   padding,
-  enteringAnimation = true,
+  entering,
+  exiting,
   ...otherProps
 }: ThemedViewProps) {
-  
   const getBackgroundKey = () => {
     switch (variant) {
       case "secondary":
@@ -34,21 +35,20 @@ export function ThemedView({
 
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
-    getBackgroundKey()
+    getBackgroundKey(),
   );
 
   return (
     <Animated.View
+      entering={entering}
+      exiting={exiting}
       style={[
         {
           backgroundColor,
           // 👇 Propiedades CSS nativas de Reanimated 4.1.1
-          transitionProperty: 'background-color, opacity, transform',
-          transitionDuration: '350ms',
-          transitionTimingFunction: 'ease-in-out',
-          // Animación de entrada
-          opacity: enteringAnimation ? 1 : 1,
-          transform: [{ scale: enteringAnimation ? 1 : 1 }],
+          transitionProperty: "background-color, opacity, transform",
+          transitionDuration: "350ms",
+          transitionTimingFunction: "ease-in-out",
         },
         padding !== undefined && { padding },
         style,

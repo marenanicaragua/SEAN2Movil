@@ -9,6 +9,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import Animated, { BounceIn, ZoomOut } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
 
 const { width, height } = Dimensions.get("window");
@@ -28,6 +29,9 @@ interface ThemedDropdownInputProps {
   containerStyle?: object;
   lightColor?: string;
   darkColor?: string;
+  error?: string;
+  entering?: any;
+  exiting?: any;
 }
 
 export function ThemedDropdownInput({
@@ -40,6 +44,9 @@ export function ThemedDropdownInput({
   icon: Icon,
   placeholder,
   options,
+  error,
+  entering = BounceIn.duration(300),
+  exiting = ZoomOut.duration(300),
 }: ThemedDropdownInputProps) {
   const router = useRouter();
 
@@ -72,6 +79,10 @@ export function ThemedDropdownInput({
   const placeholderColor = useThemeColor(
     { light: lightColor, dark: darkColor },
     "textSecondary",
+  );
+  const errorColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "error"
   );
   const primaryColor = useThemeColor({}, "primary");
 
@@ -150,6 +161,13 @@ const styles = StyleSheet.create({
   inputValue: {
     flex: 1,
     fontSize: 14,
+    fontFamily: "Manrope-Regular",
+  },
+  errorContainer: {
+    marginTop: 4,
+    paddingLeft: 12,
+  },
+  errorText: {
     fontFamily: "Manrope-Regular",
   },
 });

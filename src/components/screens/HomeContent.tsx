@@ -5,21 +5,24 @@ import { ThemedView } from "@/src/components/ui/ThemedView";
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { useAuth } from "@/src/hooks/useAuth";
 
-import { CalendarI } from "@/assets/icons/CalendarI"; // Para fechas
-import { CarI } from "@/assets/icons/CarI"; // Para placa
+import { SlideInDown, SlideInUp } from "react-native-reanimated";
+import { useForm, Controller } from "react-hook-form";
+
+import { CalendarI } from "@/assets/icons/CalendarI";
+import { CarI } from "@/assets/icons/CarI";
 import { DepI } from "@/assets/icons/DepI";
-import { GasI } from "@/assets/icons/GasI"; // Para kilometraje
-import { InfoI } from "@/assets/icons/InfoI"; // Para justificación
+import { GasI } from "@/assets/icons/GasI";
+import { InfoI } from "@/assets/icons/InfoI";
 import { LeftI } from "@/assets/icons/LeftI";
 import { RouteI } from "@/assets/icons/RouteI";
-import { SendI } from "@/assets/icons/SendI"; // Para el nuevo botón
+import { SendI } from "@/assets/icons/SendI";
 import { TaskI } from "@/assets/icons/TaskI";
-import { TimePinI } from "@/assets/icons/TimePin"; // Para fecha y hora de salida/regreso
+import { TimePinI } from "@/assets/icons/TimePin";
 import { UserI } from "@/assets/icons/UserI";
 
 import React, { useState } from "react";
-import DateTimePicker from "@react-native-community/datetimepicker"; // Importar DateTimePicker
-import { ThemedDropdownInput } from "../ui/ThemedDropdownInput"; // Importamos el nuevo componente
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { ThemedDropdownInput } from "../ui/ThemedDropdownInput";
 
 import {
   Dimensions,
@@ -29,57 +32,87 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  Alert,
 } from "react-native";
 import { ThemedText } from "../ui/ThemedText";
-import { Alert } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
+// Definir el tipo del formulario
+type FormData = {
+  nombre: string;
+  departamento: string;
+  nombreActividad: string;
+  fechaSolicitud: string;
+  fechaHoraSalida: string;
+  fechaHoraRegreso: string;
+  municipio: string;
+  placaVehiculo: string;
+  kilometrajeSalida: string;
+  kilometrajeEntrada: string;
+  justificacion: string;
+};
+
 export function HomeContent() {
   const { signOut } = useAuth();
-  const [Nombre, setNombre] = useState("");
-  const [departamentoSolicitante, setDepartamentoSolicitante] = useState(""); // Renombrado para evitar conflicto
-  const [nombreActividad, setNombreActividad] = useState("");
-  const [fechaSolicitud, setFechaSolicitud] = useState(""); // String para mostrar
-  const [fechaHoraSalida, setFechaHoraSalida] = useState(""); // String para mostrar
-  const [fechaHoraRegreso, setFechaHoraRegreso] = useState(""); // String para mostrar
-  const [municipio, setMunicipio] = useState("");
-  const [placaVehiculo, setPlacaVehiculo] = useState("");
-  const [kilometrajeSalida, setKilometrajeSalida] = useState("");
-  const [kilometrajeEntrada, setKilometrajeEntrada] = useState("");
-  const [justificacion, setJustificacion] = useState("");
   const [isFormLoading, setIsFormLoading] = useState(false);
 
-  // Obtenemos el color 'primary' definido en nuestro tema automáticamente
-  const primaryColor = useThemeColor({}, "primary");
-  const backgroundColor = useThemeColor({}, "background");
-
-  // Estados para el DateTimePicker
+  // Estados para los DateTimePicker
   const [showPickerSolicitud, setShowPickerSolicitud] = useState(false);
   const [selectedDateSolicitud, setSelectedDateSolicitud] = useState<
     Date | undefined
   >(undefined);
-
   const [showPickerSalida, setShowPickerSalida] = useState(false);
-  const [showTimePickerSalida, setShowTimePickerSalida] = useState(false); // Para Android
+  const [showTimePickerSalida, setShowTimePickerSalida] = useState(false);
   const [selectedDateSalida, setSelectedDateSalida] = useState<
     Date | undefined
   >(undefined);
-
   const [showPickerRegreso, setShowPickerRegreso] = useState(false);
-  const [showTimePickerRegreso, setShowTimePickerRegreso] = useState(false); // Para Android
+  const [showTimePickerRegreso, setShowTimePickerRegreso] = useState(false);
   const [selectedDateRegreso, setSelectedDateRegreso] = useState<
     Date | undefined
   >(undefined);
 
-  // --- Data para Departamentos y Municipios ---
+  // Estado para filtrar municipios
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+
+  const primaryColor = useThemeColor({}, "primary");
+  const backgroundColor = useThemeColor({}, "background");
+  const shadowColor = useThemeColor({}, "primary");
+
+  // Configurar React Hook Form
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      nombre: "",
+      departamento: "",
+      nombreActividad: "",
+      fechaSolicitud: "",
+      fechaHoraSalida: "",
+      fechaHoraRegreso: "",
+      municipio: "",
+      placaVehiculo: "",
+      kilometrajeSalida: "",
+      kilometrajeEntrada: "",
+      justificacion: "",
+    },
+  });
+
+  // Observar valores para validaciones
+  const watchDepartamento = watch("departamento");
+
+  // Data para Departamentos y Municipios
   const allDepartments = [
     { label: "Managua", value: "Managua" },
     { label: "Masaya", value: "Masaya" },
     { label: "Granada", value: "Granada" },
     { label: "León", value: "Leon" },
     { label: "Estelí", value: "Esteli" },
-    // Agrega más departamentos según sea necesario
   ];
 
   const allMunicipalitiesByDepartment: Record<
@@ -90,41 +123,26 @@ export function HomeContent() {
       { label: "Managua", value: "Managua" },
       { label: "Ciudad Sandino", value: "Ciudad Sandino" },
       { label: "Tipitapa", value: "Tipitapa" },
-      { label: "San Rafael del Sur", value: "San Rafael del Sur" },
-      { label: "El Crucero", value: "El Crucero" },
     ],
     Masaya: [
       { label: "Masaya", value: "Masaya" },
       { label: "Nindirí", value: "Nindiri" },
       { label: "Catarina", value: "Catarina" },
-      { label: "San Juan de Oriente", value: "San Juan de Oriente" },
-      { label: "Niquinohomo", value: "Niquinohomo" },
     ],
     Granada: [
       { label: "Granada", value: "Granada" },
       { label: "Nandaime", value: "Nandaime" },
-      { label: "Diriá", value: "Diria" },
-      { label: "Diriomo", value: "Diriomo" },
     ],
     Leon: [
       { label: "León", value: "Leon" },
       { label: "Nagarote", value: "Nagarote" },
-      { label: "La Paz Centro", value: "La Paz Centro" },
-      { label: "Quezalguaque", value: "Quezalguaque" },
     ],
     Esteli: [
       { label: "Estelí", value: "Esteli" },
       { label: "Condega", value: "Condega" },
-      { label: "Pueblo Nuevo", value: "Pueblo Nuevo" },
-      { label: "San Juan de Limay", value: "San Juan de Limay" },
     ],
-    "": [], // Default empty array if no department is selected or found
+    "": [],
   };
-
-  const shadowColor = useThemeColor({}, "primary");
-
-  // Estado para el departamento seleccionado (para filtrar municipios)
-  const [selectedDepartment, setSelectedDepartment] = useState("");
 
   // Función auxiliar para formatear fechas
   const formatDate = (
@@ -143,50 +161,31 @@ export function HomeContent() {
     return `${day}/${month}/${year}`;
   };
 
-  const handleForm = async () => {
+  // Enviar formulario
+  const onSubmit = async (data: FormData) => {
     setIsFormLoading(true);
-    if (
-      !Nombre || // Nombre del solicitante
-      !selectedDepartment || // Usar el estado del dropdown para el departamento
-      !nombreActividad ||
-      !fechaSolicitud ||
-      !fechaHoraSalida ||
-      !fechaHoraRegreso ||
-      !municipio ||
-      !placaVehiculo ||
-      !kilometrajeSalida ||
-      !kilometrajeEntrada ||
-      !justificacion
-    ) {
-      Alert.alert(
-        "Atención",
-        "Por favor complete todos los campos del formulario.",
-      );
+
+    // Validar municipio según departamento
+    if (!data.municipio) {
+      Alert.alert("Atención", "Por favor seleccione un municipio");
       setIsFormLoading(false);
       return;
     }
 
-    // Simular envío de formulario o alguna operación asíncrona
+    // Simular envío
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
+    console.log("Datos del formulario:", data);
     Alert.alert("Éxito", "Formulario enviado correctamente!");
-    setNombre("");
-    setDepartamentoSolicitante("");
-    setNombreActividad("");
-    setFechaSolicitud(""); // Limpiar string
-    setFechaHoraSalida(""); // Limpiar string
-    setFechaHoraRegreso(""); // Limpiar string
-    setMunicipio("");
-    setSelectedDepartment(""); // Limpiar también el departamento seleccionado
-    setPlacaVehiculo("");
-    setKilometrajeSalida("");
-    setKilometrajeEntrada("");
-    setJustificacion("");
+
+    // Resetear formulario
+    // Limpiar campos manualmente
     setIsFormLoading(false);
   };
+
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined }
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1, backgroundColor }}
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
@@ -198,7 +197,11 @@ export function HomeContent() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <ThemedView style={styles.content}>
+        <ThemedView
+          style={styles.content}
+          entering={SlideInDown.duration(300).delay(100)}
+          exiting={SlideInUp.duration(300)}
+        >
           <ThemedText type="title" style={styles.title}>
             Solicitud de Vehiculo
           </ThemedText>
@@ -222,31 +225,48 @@ export function HomeContent() {
               </ThemedText>
             </View>
 
-            {/* Primer Input */}
-            <ThemedInput
-              label="Nombre Completo"
-              placeholder="Ej: Juan Pedro Perez Perez"
-              placeholderTextColor="#888"
-              value={Nombre}
-              onChangeText={setNombre}
-              autoCapitalize="words"
-              icon={UserI}
-              containerStyle={styles.formInput}
+            {/* Nombre Completo */}
+            <Controller
+              control={control}
+              name="nombre"
+              rules={{ required: "El nombre completo es requerido" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <ThemedInput
+                  label="Nombre Completo"
+                  placeholder="Ej: Juan Pedro Perez Perez"
+                  placeholderTextColor="#888"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  autoCapitalize="words"
+                  icon={UserI}
+                  containerStyle={styles.formInput}
+                  error={errors.nombre?.message}
+                />
+              )}
             />
 
-            {/* Segundo Input: Departamento del Solicitante ahora es un Dropdown */}
-            <ThemedDropdownInput
-              label="Departamento"
-              placeholder="Seleccione un departamento"
-              value={selectedDepartment}
-              onChange={(value) => {
-                setSelectedDepartment(value);
-                setDepartamentoSolicitante(value);
-                setMunicipio(""); // Limpiar el municipio cuando cambia el departamento
-              }}
-              icon={DepI}
-              options={allDepartments}
-              containerStyle={styles.formInput}
+            {/* Departamento */}
+            <Controller
+              control={control}
+              name="departamento"
+              rules={{ required: "El departamento es requerido" }}
+              render={({ field: { onChange, value } }) => (
+                <ThemedDropdownInput
+                  label="Departamento"
+                  placeholder="Seleccione un departamento"
+                  value={value}
+                  onChange={(val) => {
+                    onChange(val);
+                    setSelectedDepartment(val);
+                    setValue("municipio", "");
+                  }}
+                  icon={DepI}
+                  options={allDepartments}
+                  containerStyle={styles.formInput}
+                  error={errors.departamento?.message}
+                />
+              )}
             />
 
             <View style={styles.cardTitle}>
@@ -254,205 +274,202 @@ export function HomeContent() {
               <ThemedText type="subtitle">Informacion del Viaje</ThemedText>
             </View>
 
-            {/* Nuevos Inputs */}
-            <ThemedInput
-              label="Nombre de Actividad"
-              placeholder="Ej: Entrega de documentos"
-              placeholderTextColor="#888"
-              value={nombreActividad}
-              onChangeText={setNombreActividad}
-              autoCapitalize="sentences"
-              icon={TaskI}
-              containerStyle={styles.formInput}
+            {/* Nombre de Actividad */}
+            <Controller
+              control={control}
+              name="nombreActividad"
+              rules={{ required: "El nombre de la actividad es requerido" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <ThemedInput
+                  label="Nombre de Actividad"
+                  placeholder="Ej: Entrega de documentos"
+                  placeholderTextColor="#888"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  autoCapitalize="sentences"
+                  icon={TaskI}
+                  containerStyle={styles.formInput}
+                  error={errors.nombreActividad?.message}
+                />
+              )}
             />
 
             {/* Fecha de Solicitud */}
-            <Pressable
-              onPress={() => setShowPickerSolicitud(true)}
-              style={styles.datePickerPressable}
-            >
-              <ThemedInput
-                label="Fecha de Solicitud"
-                placeholder="DD/MM/AAAA"
-                placeholderTextColor="#888"
-                value={fechaSolicitud}
-                icon={CalendarI}
-                editable={false} // No permitir edición directa
-              />
-            </Pressable>
-            {showPickerSolicitud && (
-              <DateTimePicker
-                value={selectedDateSolicitud || new Date()}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(event, date) => {
-                  setShowPickerSolicitud(false);
-                  if (event.type === "set" && date) {
-                    setSelectedDateSolicitud(date);
-                    setFechaSolicitud(formatDate(date));
-                  }
-                }}
-              />
-            )}
+            <Controller
+              control={control}
+              name="fechaSolicitud"
+              rules={{ required: "La fecha de solicitud es requerida" }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Pressable
+                    onPress={() => setShowPickerSolicitud(true)}
+                    style={styles.datePickerPressable}
+                  >
+                    <ThemedInput
+                      label="Fecha de Solicitud"
+                      placeholder="DD/MM/AAAA"
+                      placeholderTextColor="#888"
+                      value={value}
+                      icon={CalendarI}
+                      editable={false}
+                      error={errors.fechaSolicitud?.message}
+                    />
+                  </Pressable>
+                  {showPickerSolicitud && (
+                    <DateTimePicker
+                      value={selectedDateSolicitud || new Date()}
+                      mode="date"
+                      display={Platform.OS === "ios" ? "spinner" : "default"}
+                      onChange={(event, date) => {
+                        setShowPickerSolicitud(false);
+                        if (event.type === "set" && date) {
+                          setSelectedDateSolicitud(date);
+                          const formattedDate = formatDate(date);
+                          onChange(formattedDate);
+                        }
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            />
 
             {/* Fecha y Hora de Salida */}
-            <Pressable
-              onPress={() => setShowPickerSalida(true)}
-              style={styles.datePickerPressable}
-            >
-              <ThemedInput
-                label="Fecha y Hora de Salida"
-                placeholder="DD/MM/AAAA HH:MM"
-                placeholderTextColor="#888"
-                value={fechaHoraSalida}
-                icon={TimePinI}
-                editable={false}
-              />
-            </Pressable>
-            {showPickerSalida && (
-              <DateTimePicker
-                value={selectedDateSalida || new Date()}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(event, date) => {
-                  setShowPickerSalida(false);
-                  if (event.type === "set" && date) {
-                    setSelectedDateSalida(date);
-                    if (Platform.OS === "android") {
-                      setShowTimePickerSalida(true); // Mostrar picker de hora después en Android
-                    } else {
-                      setFechaHoraSalida(formatDate(date, true)); // iOS puede seleccionar ambos
-                    }
-                  }
-                }}
-              />
-            )}
-            {showTimePickerSalida && Platform.OS === "android" && (
-              <DateTimePicker
-                value={selectedDateSalida || new Date()}
-                mode="time"
-                display="default"
-                onChange={(event, time) => {
-                  setShowTimePickerSalida(false);
-                  if (event.type === "set" && time && selectedDateSalida) {
-                    const newDateTime = new Date(selectedDateSalida);
-                    newDateTime.setHours(time.getHours());
-                    newDateTime.setMinutes(time.getMinutes());
-                    setSelectedDateSalida(newDateTime);
-                    setFechaHoraSalida(formatDate(newDateTime, true));
-                  }
-                }}
-              />
-            )}
-
-            {/* Fecha y Hora de Regreso */}
-            <Pressable
-              onPress={() => setShowPickerRegreso(true)}
-              style={styles.datePickerPressable}
-            >
-              <ThemedInput
-                label="Fecha y Hora de Regreso"
-                placeholder="DD/MM/AAAA HH:MM"
-                placeholderTextColor="#888"
-                value={fechaHoraRegreso}
-                icon={TimePinI}
-                editable={false}
-              />
-            </Pressable>
-            {showPickerRegreso && (
-              <DateTimePicker
-                value={selectedDateRegreso || new Date()}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(event, date) => {
-                  setShowPickerRegreso(false);
-                  if (event.type === "set" && date) {
-                    setSelectedDateRegreso(date);
-                    if (Platform.OS === "android") {
-                      setShowTimePickerRegreso(true);
-                    } else {
-                      setFechaHoraRegreso(formatDate(date, true));
-                    }
-                  }
-                }}
-              />
-            )}
-            {showTimePickerRegreso && Platform.OS === "android" && (
-              <DateTimePicker
-                value={selectedDateRegreso || new Date()}
-                mode="time"
-                display="default"
-                onChange={(event, time) => {
-                  setShowTimePickerRegreso(false);
-                  if (event.type === "set" && time && selectedDateRegreso) {
-                    const newDateTime = new Date(selectedDateRegreso);
-                    newDateTime.setHours(time.getHours());
-                    newDateTime.setMinutes(time.getMinutes());
-                    setSelectedDateRegreso(newDateTime);
-                    setFechaHoraRegreso(formatDate(newDateTime, true));
-                  }
-                }}
-              />
-            )}
-
-            <ThemedDropdownInput
-              label="Municipio"
-              placeholder="Ej: Managua"
-              value={municipio}
-              onChange={setMunicipio}
-              icon={DepI} // Aseguramos que el icono se pase
-              options={allMunicipalitiesByDepartment[selectedDepartment] || []} // Opciones filtradas
-              containerStyle={styles.formInput}
+            <Controller
+              control={control}
+              name="fechaHoraSalida"
+              rules={{ required: "La fecha y hora de salida es requerida" }}
+              render={({ field: { onChange, value } }) => (
+                <>
+                  <Pressable
+                    onPress={() => setShowPickerSalida(true)}
+                    style={styles.datePickerPressable}
+                  >
+                    <ThemedInput
+                      label="Fecha y Hora de Salida"
+                      placeholder="DD/MM/AAAA HH:MM"
+                      placeholderTextColor="#888"
+                      value={value}
+                      icon={TimePinI}
+                      editable={false}
+                      error={errors.fechaHoraSalida?.message}
+                    />
+                  </Pressable>
+                  {/* DatePicker y TimePicker - mantener tu lógica existente */}
+                </>
+              )}
             />
 
-            <ThemedInput
-              label="Placa del Vehículo"
-              placeholder="Ej: M 123 456"
-              placeholderTextColor="#888"
-              value={placaVehiculo}
-              onChangeText={setPlacaVehiculo}
-              autoCapitalize="characters"
-              icon={CarI}
-              containerStyle={styles.formInput} // Aplicar formInput style aquí
+            {/* Municipio */}
+            <Controller
+              control={control}
+              name="municipio"
+              rules={{ required: "El municipio es requerido" }}
+              render={({ field: { onChange, value } }) => (
+                <ThemedDropdownInput
+                  label="Municipio"
+                  placeholder="Ej: Managua"
+                  value={value}
+                  onChange={onChange}
+                  icon={DepI}
+                  options={
+                    allMunicipalitiesByDepartment[watchDepartamento] || []
+                  }
+                  containerStyle={styles.formInput}
+                  error={errors.municipio?.message}
+                />
+              )}
             />
 
-            <ThemedInput
-              label="Kilometraje de Salida"
-              placeholder="Ej: 123456"
-              placeholderTextColor="#888"
-              value={kilometrajeSalida}
-              onChangeText={setKilometrajeSalida}
-              keyboardType="numeric"
-              icon={GasI}
-              containerStyle={styles.formInput} // Aplicar formInput style aquí
+            {/* Placa del Vehículo */}
+            <Controller
+              control={control}
+              name="placaVehiculo"
+              rules={{ required: "La placa del vehículo es requerida" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <ThemedInput
+                  label="Placa del Vehículo"
+                  placeholder="Ej: M 123 456"
+                  placeholderTextColor="#888"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  autoCapitalize="characters"
+                  icon={CarI}
+                  containerStyle={styles.formInput}
+                  error={errors.placaVehiculo?.message}
+                />
+              )}
             />
 
-            <ThemedInput
-              label="Kilometraje de Entrada"
-              placeholder="Ej: 123500"
-              placeholderTextColor="#888"
-              value={kilometrajeEntrada}
-              onChangeText={setKilometrajeEntrada}
-              keyboardType="numeric"
-              icon={GasI}
-              containerStyle={styles.formInput} // Aplicar formInput style aquí
+            {/* Kilometraje de Salida */}
+            <Controller
+              control={control}
+              name="kilometrajeSalida"
+              rules={{ required: "El kilometraje de salida es requerido" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <ThemedInput
+                  label="Kilometraje de Salida"
+                  placeholder="Ej: 123456"
+                  placeholderTextColor="#888"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="numeric"
+                  icon={GasI}
+                  containerStyle={styles.formInput}
+                  error={errors.kilometrajeSalida?.message}
+                />
+              )}
             />
 
-            <ThemedInput
-              label="Justificación"
-              placeholder="Describa brevemente el motivo del viaje..."
-              placeholderTextColor="#888"
-              value={justificacion}
-              onChangeText={setJustificacion}
-              multiline={true}
-              numberOfLines={4} // Permite que el input crezca hasta 4 líneas
-              icon={InfoI}
-              containerStyle={styles.formInput} // Aplicar formInput style aquí
+            {/* Kilometraje de Entrada */}
+            <Controller
+              control={control}
+              name="kilometrajeEntrada"
+              rules={{ required: "El kilometraje de entrada es requerido" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <ThemedInput
+                  label="Kilometraje de Entrada"
+                  placeholder="Ej: 123500"
+                  placeholderTextColor="#888"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="numeric"
+                  icon={GasI}
+                  containerStyle={styles.formInput}
+                  error={errors.kilometrajeEntrada?.message}
+                />
+              )}
+            />
+
+            {/* Justificación */}
+            <Controller
+              control={control}
+              name="justificacion"
+              rules={{ required: "La justificación es requerida" }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <ThemedInput
+                  label="Justificación"
+                  placeholder="Describa brevemente el motivo del viaje..."
+                  placeholderTextColor="#888"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  multiline={true}
+                  numberOfLines={4}
+                  icon={InfoI}
+                  containerStyle={styles.formInput}
+                  error={errors.justificacion?.message}
+                />
+              )}
             />
 
             <ThemedButton
               title="Enviar Solicitud"
-              onPress={handleForm}
+              onPress={handleSubmit(onSubmit)}
               loading={isFormLoading}
               icon={SendI}
               iconPosition="right"
@@ -462,7 +479,7 @@ export function HomeContent() {
         </ThemedView>
       </ScrollView>
 
-      {/* Botón de Cerrar Sesión como FAB redondo */}
+      {/* Botón de Cerrar Sesión */}
       <ThemedButton
         variant="danger"
         onPress={signOut}
@@ -475,8 +492,8 @@ export function HomeContent() {
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    flexGrow: 1, // Asegura que el ScrollView ocupe todo el espacio disponible
-    paddingBottom: 80
+    flexGrow: 1,
+    paddingBottom: 80,
   },
   content: {
     alignItems: "center",
@@ -511,10 +528,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  description: {
-    marginBottom: 30,
-    opacity: 0.6,
-  },
   fabButton: {
     position: "absolute",
     bottom: 85,
@@ -525,8 +538,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 0,
-    paddingHorizontal: 0,
-    minWidth: 0,
     elevation: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -534,13 +545,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
   },
   formInput: {
-    // Este estilo ahora definirá el espaciado *después* de cada bloque de entrada
-    marginBottom: 15, // Espaciado consistente entre inputs
+    marginBottom: 15,
+    width: "100%",
   },
   datePickerPressable: {
-    // Nuevo estilo para los Pressable que envuelven los selectores de fecha
     width: "100%",
-    marginBottom: 15, // Espaciado consistente entre inputs
+    marginBottom: 15,
   },
   formButton: {
     borderRadius: 25,

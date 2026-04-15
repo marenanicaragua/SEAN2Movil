@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "../ui/ThemedText";
 import { ThemedView } from "../ui/ThemedView";
 
+import { SlideInUp } from "react-native-reanimated";
+
 import { UserI } from "@/assets/icons/UserI";
 
 const { width, height } = Dimensions.get("window");
@@ -18,6 +20,7 @@ export function HeaderBar({ style }: HeaderBarProps) {
 
   return (
     <ThemedView
+      entering={SlideInUp.duration(300).delay(50)}
       style={[styles.container, { paddingTop: insets.top + 10 }, style]}
     >
       <View style={styles.content}>
