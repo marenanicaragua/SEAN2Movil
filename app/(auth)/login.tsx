@@ -10,7 +10,6 @@ import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 import { SlideInDown, SlideInUp } from "react-native-reanimated";
 
-import React from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -82,7 +81,7 @@ export default function LoginScreen() {
           exiting={SlideInUp.duration(300)}
           style={styles.container}>
           <ThemedText type="title" style={styles.title}>
-            Bienvenido a Transporte Marena
+            Bienvenido a SEAN
           </ThemedText>
           <ThemedText style={styles.subtitle}>
             Ingrese sus credenciales para continuar por favor
@@ -100,10 +99,10 @@ export default function LoginScreen() {
               name="email"
               rules={{
                 required: "El correo electrónico es requerido",
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: "Ingrese un correo electrónico válido",
-                },
+                //pattern: {
+                 // value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  //message: "Ingrese un correo electrónico válido",
+                //},
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <ThemedInput

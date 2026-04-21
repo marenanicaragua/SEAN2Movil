@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 50, // Altura mínima en lugar de fija
     borderWidth: width * 0.005,
-    borderRadius: width * 0.1, // Un radio más moderado para que no se corte el texto
+    borderRadius: width * 0.04, // Un radio más moderado para que no se corte el texto
     paddingHorizontal: 12,
   },
   icon: {

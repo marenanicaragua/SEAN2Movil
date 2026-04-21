@@ -5,12 +5,18 @@ import { useThemeColor } from "@/src/hooks/use-theme-color";
 import React from "react";
 import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 
+import { useAuth } from "@/src/hooks/useAuth";
+
 const { width, height } = Dimensions.get("window");
 
 export function RegistroContent() {
   const backgroundColor = useThemeColor({}, "background");
   const primaryColor = useThemeColor({}, "primary");
   const shadowColor = useThemeColor({}, "primary");
+
+    const { token, user } = useAuth(); // 👈 obtén token y user
+
+  console.log("Token en HomeContent:", token); // ✅ ya no será null después del login
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor }}>
