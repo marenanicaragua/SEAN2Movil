@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 // Importa tus iconos aquí (ajusta las rutas según tu estructura)
 import { HomeI } from '@/assets/icons/HomeI';
 import { RegisterI } from '@/assets/icons/RegisterI';
+import { TestI } from '@/assets/icons/TestI';
 
 
 // Tipo para la función de icono
@@ -26,7 +27,8 @@ interface TabBarButtonProps {
 const ICON_ARRAY: { name: string; component: IconComponent }[] = [
   { name: 'index', component: HomeI },        // Pantalla de inicio
   { name: 'Registro', component: RegisterI },    // Pantalla de solicitud
-   // Pantalla de perfil
+  { name: 'Test', component: TestI },    // Pantalla de Test
+  // Pantalla de perfil
   // Agrega más rutas según necesites
   // { name: 'configuracion', component: SettingsIcon },
   // { name: 'notificaciones', component: BellIcon },

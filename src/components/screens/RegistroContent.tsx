@@ -2,7 +2,7 @@ import { HeaderBar } from "@/src/components/layout/HeaderBar";
 import { ThemedText } from "@/src/components/ui/ThemedText";
 import { ThemedView } from "@/src/components/ui/ThemedView";
 import { useThemeColor } from "@/src/hooks/use-theme-color";
-import React from "react";
+
 import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 
 import { useAuth } from "@/src/hooks/useAuth";
@@ -27,31 +27,8 @@ export function RegistroContent() {
         showsVerticalScrollIndicator={false}
       >
         <ThemedView style={styles.content}>
-          <ThemedText type="title" style={styles.title}>
-            Historial de Registros
-          </ThemedText>
-
-          <ThemedText style={styles.subtitle}>
-            Aquí podrá visualizar el estado y detalle de todas sus solicitudes
-            realizadas anteriormente.
-          </ThemedText>
-
-          {/* Tarjeta de ejemplo para un registro vacío o lista */}
-          <ThemedView
-            variant="secondary"
-            style={[
-              styles.card,
-              { boxShadow: `0px 5px 15px ${shadowColor}33` },
-            ]}
-          >
-            <View style={styles.emptyState}>
-              <ThemedText type="subtitle">Sin registros</ThemedText>
-              <ThemedText style={styles.description}>
-                Aún no cuenta con solicitudes de transporte registradas en su
-                historial.
-              </ThemedText>
-            </View>
-          </ThemedView>
+         
+           
         </ThemedView>
       </ScrollView>
     </ThemedView>

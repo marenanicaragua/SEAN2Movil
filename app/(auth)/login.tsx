@@ -5,6 +5,7 @@ import { ThemedText } from "@/src/components/ui/ThemedText";
 import { ThemedView } from "@/src/components/ui/ThemedView";
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { useAuth } from "@/src/hooks/useAuth";
+import { useState } from "react";
 
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
@@ -18,6 +19,7 @@ import {
   StyleSheet,
 } from "react-native";
 
+import { EyeI } from "@/assets/icons/EyeI";
 import { MailI } from "@/assets/icons/MailI";
 import { PassI } from "@/assets/icons/PassI";
 import { SendI } from "@/assets/icons/SendI";
@@ -34,6 +36,7 @@ type FormData = {
 export default function LoginScreen() {
   const { signIn, isLoading } = useAuth();
   const backgroundColor = useThemeColor({}, "background");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const {
     control,
@@ -76,10 +79,11 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        <ThemedView 
+        <ThemedView
           entering={SlideInDown.duration(300).delay(100)}
           exiting={SlideInUp.duration(300)}
-          style={styles.container}>
+          style={styles.container}
+        >
           <ThemedText type="title" style={styles.title}>
             Bienvenido a SEAN
           </ThemedText>
@@ -100,8 +104,8 @@ export default function LoginScreen() {
               rules={{
                 required: "El correo electrónico es requerido",
                 //pattern: {
-                 // value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  //message: "Ingrese un correo electrónico válido",
+                // value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                //message: "Ingrese un correo electrónico válido",
                 //},
               }}
               render={({ field: { onChange, onBlur, value } }) => (
@@ -139,7 +143,11 @@ export default function LoginScreen() {
                   onChangeText={onChange}
                   onBlur={onBlur}
                   icon={PassI}
-                  secureTextEntry
+                  secureTextEntry={!isPasswordVisible}
+                  rightIcon={EyeI}
+                  onRightIconPress={() =>
+                    setIsPasswordVisible(!isPasswordVisible)
+                  }
                   error={errors.password?.message}
                 />
               )}
@@ -171,28 +179,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    marginVertical: height * 0.03,
+    marginVertical: height * 0.05,
     marginHorizontal: width * 0.05,
     textAlign: "left",
     fontFamily: "Manrope-Bold",
   },
   subtitle: {
-    marginTop: height * 0.01,
-    marginBottom: height * 0.03,
+    marginTop: height * 0.025,
+    marginBottom: height * 0.04,
     marginHorizontal: width * 0.05,
     textAlign: "left",
     opacity: 0.6,
   },
   card: {
-    width: width * 0.9,
+    width: width * 0.7,
+    height: height * 0.28,
     padding: 20,
     borderRadius: 25,
     alignItems: "center",
+    justifyContent: "center",
   },
   button: {
     marginTop: 20,
     borderRadius: 25,
-    width: "100%",
+    width: "60%",
   },
   footerText: {
     marginVertical: height * 0.03,
@@ -200,7 +210,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.4,
     fontFamily: "Manrope-Light",
-    fontSize: width * 0.038,
-    lineHeight: 15,
+    fontSize: width * 0.028,
+    lineHeight: 30,
   },
 });

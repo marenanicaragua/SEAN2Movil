@@ -1,7 +1,7 @@
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { ThemedInputProps } from "@/src/models/types/ThemedInput";
-import React from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import Animated, { BounceIn, ZoomOut } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
 
@@ -15,6 +15,8 @@ interface Props extends ThemedInputProps {
   error?: string;
   entering?: any; // Tipado simple para Reanimated
   exiting?: any;
+  rightIcon?: any;
+  onRightIconPress?: () => void;
 }
 
 export function ThemedInput({
@@ -27,6 +29,8 @@ export function ThemedInput({
   error,
   entering = BounceIn.duration(300),
   exiting = ZoomOut.duration(300),
+  rightIcon: RightIcon,
+  onRightIconPress,
   ...rest
 }: Props) {
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
@@ -70,6 +74,27 @@ export function ThemedInput({
           textAlignVertical={rest.multiline ? "top" : "center"}
           {...rest}
         />
+        {RightIcon && (
+          <Pressable onPress={onRightIconPress}>
+            {({ pressed }) => (
+              <Animated.View
+                style={[
+                  styles.rightIcon,
+                  {
+                    opacity: pressed ? 0.6 : 1,
+                    transform: [{ scale: pressed ? 0.85 : 1 }],
+                    // 👇 Propiedades nativas de Reanimated 4.1.1 para transiciones suaves
+                    transitionProperty: "transform, opacity",
+                    transitionDuration: "350ms",
+                    transitionTimingFunction: "ease-in-out",
+                  },
+                ]}
+              >
+                <RightIcon color={iconColor as string} size={20} />
+              </Animated.View>
+            )}
+          </Pressable>
+        )}
       </View>
       {error && (
         <Animated.View
@@ -102,17 +127,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     minHeight: 50, // Altura mínima en lugar de fija
-    borderWidth: width * 0.005,
+    borderWidth: width * 0.0015,
     borderRadius: width * 0.04, // Un radio más moderado para que no se corte el texto
     paddingHorizontal: 12,
   },
   icon: {
     marginRight: 10,
   },
+  rightIcon: {
+    marginLeft: 10,
+  },
   input: {
     flex: 1,
     fontSize: 14,
-    paddingVertical: 10,
+    paddingVertical: 17,
     fontFamily: "Manrope-Regular",
   },
   errorContainer: {

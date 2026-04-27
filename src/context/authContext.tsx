@@ -37,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await fetch(url, {
         method: "POST",
         headers: {
+          "Accept": "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -51,8 +52,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.status === 200 && data.token) {
         await setToken(data.token);
         await setRefreshToken(data.refreshToken);
-
-        console.log(token);
 
         // Guardamos el usuario usando las credenciales del formulario
         setUser({ email } as User);
@@ -84,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         isLoading,
         isAuthenticating,
-        isAuthenticated: !!user,
+        isAuthenticated: !!token,
         signIn,
         signOut,
       }}

@@ -1,7 +1,7 @@
 import { ChevronDownI } from "@/assets/icons/ChevronDownI"; // Importamos el nuevo icono
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { useRouter } from "expo-router";
-import React, { type ComponentType, useEffect } from "react";
+import { type ComponentType, useEffect } from "react";
 import {
   DeviceEventEmitter,
   Dimensions,
@@ -9,7 +9,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import Animated, { BounceIn, ZoomOut } from "react-native-reanimated";
+import { BounceIn, ZoomOut } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
 
 const { width, height } = Dimensions.get("window");

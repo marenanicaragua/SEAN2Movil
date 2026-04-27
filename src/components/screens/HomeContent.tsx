@@ -11,14 +11,14 @@ import { useAuth } from "@/src/hooks/useAuth";
 const { width, height } = Dimensions.get("window");
 
 export function HomeContent() {
-
   const primaryColor = useThemeColor({}, "primary");
   const backgroundColor = useThemeColor({}, "background");
   const shadowColor = useThemeColor({}, "primary");
 
   const { token, user } = useAuth(); // 👈 obtén token y user
 
-  console.log("Token en HomeContent:", token); // ✅ ya no será null después del login
+  console.log("Token en HomeContent:", token);
+  console.log("Tipo de Token en HomeContent:", typeof token); // Esto mostrará 'string' o 'object' (para null)
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor }}>
@@ -33,7 +33,7 @@ export function HomeContent() {
           style={styles.content}
         >
           <ThemedText type="title" style={styles.title}>
-            Bienvenido
+            Superviciones Pendientes
           </ThemedText>
 
           <ThemedView
