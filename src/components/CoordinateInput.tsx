@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import { ThemedButton } from "./ui/ThemedButton";
 import { ThemedDropdownInput } from "./ui/ThemedDropdownInput";
@@ -16,23 +16,31 @@ interface Point {
 
 interface CoordinateInputProps {
   onPointsChange: (points: Point[]) => void;
+  initialPoints?: Point[]; // Nueva prop para puntos iniciales
 }
 
 type CoordinateType = "latlng" | "utm";
 
-export function CoordinateInput({ onPointsChange }: CoordinateInputProps) {
+export function CoordinateInput({ onPointsChange, initialPoints }: CoordinateInputProps) {
   const [coordType, setCoordType] = useState<CoordinateType>("latlng");
   const [pointMode, setPointMode] = useState("1"); // '1' | '3+'
-  const [points, setPoints] = useState<Point[]>([]);
+  const [points, setPoints] = useState<Point[]>(initialPoints || []);
+
+  // Sincronizar puntos iniciales si cambian desde las props
+  useEffect(() => {
+    setPoints(initialPoints || []);
+    // No llamar onPointsChange aquí para evitar bucles o llamadas innecesarias
+    // El padre (SelectCoordinatesScreen) ya maneja el estado de los puntos.
+  }, [initialPoints]);
 
   // States para Lat/Lng
   const [lat, setLat] = useState("");
   const [lng, setLng] = useState("");
 
   // States para UTM
-  const [easting, setEasting] = useState("");     // X (metros)
-  const [northing, setNorthing] = useState("");   // Y (metros)
-  const [zone, setZone] = useState("16");         // Zona UTM (Nicaragua usa 16)
+  const [easting, setEasting] = useState(""); // X (metros)
+  const [northing, setNorthing] = useState(""); // Y (metros)
+  const [zone, setZone] = useState("16"); // Zona UTM (Nicaragua usa 16)
   const [hemisphere, setHemisphere] = useState<"N" | "S">("N");
 
   // Estados para GMS (mantengo tu funcionalidad existente)
@@ -55,7 +63,12 @@ export function CoordinateInput({ onPointsChange }: CoordinateInputProps) {
   };
 
   // Convertir UTM a Lat/Lng usando la librería utm-latlng
-  const convertUTMtoLatLng = (e: string, n: string, z: string, h: "N" | "S"): Point | null => {
+  const convertUTMtoLatLng = (
+    e: string,
+    n: string,
+    z: string,
+    h: "N" | "S",
+  ): Point | null => {
     try {
       const eastingNum = parseFloat(e);
       const northingNum = parseFloat(n);
@@ -67,13 +80,19 @@ export function CoordinateInput({ onPointsChange }: CoordinateInputProps) {
       }
 
       // Usar la librería utm-latlng (convertUtmToLatLng)
-      const result = utmConverter.convertUtmToLatLng(eastingNum, northingNum, zoneNum, zoneLetter);
-      
-      if (result && result.lat && result.lng) {
+      const result = utmConverter.convertUtmToLatLng(
+        eastingNum,
+        northingNum,
+        zoneNum,
+        zoneLetter,
+      );
+
+      // Verificamos que result no sea un string para que TypeScript permita acceder a lat y lng
+      if (result && typeof result !== "string") {
         return {
           latitude: parseFloat(result.lat.toFixed(6)),
           longitude: parseFloat(result.lng.toFixed(6)),
-        };
+        }; 
       }
       return null;
     } catch (error) {
@@ -139,6 +158,21 @@ export function CoordinateInput({ onPointsChange }: CoordinateInputProps) {
     }
 
     clearInputs();
+  };
+
+  const handleDeletePoint = (index: number) => {
+    const updatedPoints = points.filter((_, i) => i !== index);
+    setPoints(updatedPoints);
+    onPointsChange(updatedPoints);
+  };
+
+  const handleEditPoint = (index: number) => {
+    const point = points[index];
+    setCoordType("latlng");
+    setFormat("decimal");
+    setLat(point.latitude.toString());
+    setLng(point.longitude.toString());
+    handleDeletePoint(index);
   };
 
   const handleClear = () => {
@@ -324,18 +358,66 @@ export function CoordinateInput({ onPointsChange }: CoordinateInputProps) {
       )}
 
       <ThemedView style={styles.list}>
-        <ThemedText type="label">
-          Puntos registrados: {points.length}
+        <ThemedText type="label" style={styles.listTitle}>
+          Puntos registrados ({points.length})
         </ThemedText>
-        {points.map((p, i) => (
-          <ThemedText key={i} type="bodySmall">
-            P{i + 1}: {p.latitude.toFixed(6)}, {p.longitude.toFixed(6)}
+
+        <View style={styles.tableHeader}>
+          <ThemedText style={[styles.headerText, { flex: 0.5 }]}>#</ThemedText>
+          <ThemedText style={[styles.headerText, { flex: 2 }]}>
+            Latitud
           </ThemedText>
+          <ThemedText style={[styles.headerText, { flex: 2 }]}>
+            Longitud
+          </ThemedText>
+          <ThemedText
+            style={[styles.headerText, { flex: 2, textAlign: "center" }]}
+          >
+            Acciones
+          </ThemedText>
+        </View>
+
+        {points.map((p, i) => (
+          <View key={i} style={styles.tableRow}>
+            <ThemedText style={[styles.cellText, { flex: 0.5 }]}>
+              {i + 1}
+            </ThemedText>
+            <ThemedText style={[styles.cellText, { flex: 2 }]}>
+              {p.latitude.toFixed(4)}
+            </ThemedText>
+            <ThemedText style={[styles.cellText, { flex: 2 }]}>
+              {p.longitude.toFixed(4)}
+            </ThemedText>
+            <View style={styles.rowActions}>
+              <Pressable
+                onPress={() => handleEditPoint(i)}
+                style={styles.actionBtn}
+              >
+                <ThemedText
+                  style={{ color: "#2196F3", fontSize: 12, fontWeight: "bold" }}
+                >
+                  EDIT
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={() => handleDeletePoint(i)}
+                style={styles.actionBtn}
+              >
+                <ThemedText
+                  style={{ color: "#FF5252", fontSize: 12, fontWeight: "bold" }}
+                >
+                  DEL
+                </ThemedText>
+              </Pressable>
+            </View>
+          </View>
         ))}
       </ThemedView>
     </ThemedView>
   );
 }
+
+import { Pressable } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -372,6 +454,39 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     backgroundColor: "rgba(0,0,0,0.05)",
+  },
+  listTitle: {
+    marginBottom: 10,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(0,0,0,0.1)",
+    paddingBottom: 5,
+    marginBottom: 5,
+  },
+  tableRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: "rgba(0,0,0,0.05)",
+  },
+  headerText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    opacity: 0.7,
+  },
+  cellText: {
+    fontSize: 12,
+  },
+  rowActions: {
+    flex: 2,
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  actionBtn: {
+    padding: 4,
   },
   hintText: {
     marginTop: 5,
