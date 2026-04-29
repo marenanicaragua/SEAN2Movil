@@ -1,24 +1,25 @@
 import { ThemedText } from "@/src/components/ui/ThemedText";
 import { ThemedView } from "@/src/components/ui/ThemedView";
-import { useState } from "react";
 
 import { useThemeColor } from "@/src/hooks/use-theme-color";
 import { HeaderBar } from "../layout/HeaderBar";
 
-import { Map } from "@/src/components/Map";
-import { CoordinateInput } from "../CoordinateInput";
+import { FormRequest, Question } from "@/src/components/forms/FormRequest"; // Mantén la importación de la interfaz Question
+import { questions as allQuestions } from "@/src/services/database/Question"; // Importa el array de preguntas
 
 import { Dimensions, ScrollView, StyleSheet } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
 export function TestContent() {
-  const [mapPoints, setMapPoints] = useState<
-    { latitude: number; longitude: number }[]
-  >([]);
-
   const backgroundColor = useThemeColor({}, "background");
-  const primaryColor = useThemeColor({}, "primary");
+
+  const formQuestions: Question[] = allQuestions as Question[]; // Usa el array importado
+
+  const handleFormSubmit = (data: Record<string, any>) => {
+    console.log("Datos del formulario:", data);
+    // Los puntos estarán en data.ubicacion_gps
+  };
 
   return (
     <ThemedView style={{ flex: 1, backgroundColor }}>
@@ -31,8 +32,12 @@ export function TestContent() {
           <ThemedText type="title" style={styles.title}>
             Registro Geográfico
           </ThemedText>
-          <CoordinateInput onPointsChange={setMapPoints} />
-          <Map points={mapPoints} />
+
+          <FormRequest
+            title="Información de Campo"
+            questions={formQuestions} // Pasa el array importado
+            onSubmit={handleFormSubmit}
+          />
         </ScrollView>
       </ThemedView>
     </ThemedView>
