@@ -1,23 +1,26 @@
+// src/components/ui/FormRequest.tsx
 import { ThemedButton } from "@/src/components/ui/ThemedButton";
 import { ThemedDropdownInput } from "@/src/components/ui/ThemedDropdownInput";
 import { ThemedInput } from "@/src/components/ui/ThemedInput";
 import { ThemedText } from "@/src/components/ui/ThemedText";
 import { ThemedView } from "@/src/components/ui/ThemedView";
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Controller, useForm, useFieldArray } from "react-hook-form";
-import { DeviceEventEmitter, StyleSheet, ScrollView, Pressable, View } from "react-native";
+import { ThemedImageGallery } from "@/src/components/ui/ThemedImageGallery";
+// ✅ AGREGAR ESTAS IMPORTACIONES FALTANTES
 import { ThemedRadioGroup } from "@/src/components/ui/ThemedRadioGroup";
 import { ThemedCheckbox } from "@/src/components/ui/ThemedCheckbox";
 import { ThemedTable } from "@/src/components/ui/ThemedTable";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { DeviceEventEmitter, StyleSheet, ScrollView, View, Pressable } from "react-native";
 
 export interface Question {
   id: string;
   label: string;
-  type: "text" | "textarea" | "dropdown" | "map" | "title" | "radio" | "checkbox" | "table";
+  type: "text" | "textarea" | "dropdown" | "title" | "radio" | "checkbox" | "table";
   placeholder?: string;
   required?: boolean;
-  critical?: boolean; // Si es true y respuesta negativa, bloquea envío
+  critical?: boolean;
   options?: { label: string; value: string }[] | string[];
   columns?: { key: string; label: string; type: string; options?: string[] }[];
   dependsOn?: { field: string; value: any };
@@ -28,6 +31,13 @@ interface FormRequestProps {
   questions: Question[];
   onSubmit?: (data: Record<string, any>) => void;
   onCriticalFail?: (criticalQuestions: Question[]) => void;
+  // Configuración del mapa
+  mapRequired?: boolean;
+  mapLabel?: string;
+  // Configuración de galería
+  galleryRequired?: boolean;
+  galleryLabel?: string;
+  maxImages?: number;
 }
 
 interface Point {
@@ -35,35 +45,31 @@ interface Point {
   longitude: number;
 }
 
-export function FormRequest({ title, questions, onSubmit, onCriticalFail }: FormRequestProps) {
+export function FormRequest({ 
+  title, 
+  questions, 
+  onSubmit, 
+  onCriticalFail,
+  mapRequired = true,
+  mapLabel = "Ubicación Geográfica",
+  galleryRequired = true,
+  galleryLabel = "Fotografías de la Inspección",
+  maxImages = 20,
+}: FormRequestProps) {
   const router = useRouter();
   const [criticalErrors, setCriticalErrors] = useState<string[]>([]);
 
-  // Filtrar preguntas que dependen de otras
-  const getVisibleQuestions = (formValues: Record<string, any>) => {
-    return questions.filter(question => {
-      if (!question.dependsOn) return true;
-      const dependsValue = formValues[question.dependsOn.field];
-      return dependsValue === question.dependsOn.value;
-    });
-  };
-
-  // Inicializar valores por defecto
+  // Inicializar valores por defecto (incluyendo mapa y galería)
   const defaultValues = questions.reduce((acc, q) => {
-    if (q.type === "map") {
-      return { ...acc, [q.id]: [] };
-    }
-    if (q.type === "table") {
-      return { ...acc, [q.id]: [] };
-    }
-    if (q.type === "checkbox") {
-      return { ...acc, [q.id]: [] };
-    }
-    if (q.type === "radio") {
-      return { ...acc, [q.id]: "" };
-    }
+    if (q.type === "table") return { ...acc, [q.id]: [] };
+    if (q.type === "checkbox") return { ...acc, [q.id]: [] };
+    if (q.type === "radio") return { ...acc, [q.id]: "" };
     return { ...acc, [q.id]: "" };
-  }, {});
+  }, {
+    // Campos fijos que siempre existen
+    ubicacion_gps: [], // Mapa
+    fotografias: [],   // Galería
+  });
 
   const {
     control,
@@ -110,7 +116,7 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
   }, [setValue]);
 
   const onFormSubmit = (data: Record<string, any>) => {
-    // Verificar preguntas críticas antes de enviar
+    // Verificar preguntas críticas
     const criticalQuestions = questions.filter(q => q.critical && q.required);
     const hasNegativeCritical = criticalQuestions.some(q => {
       const answer = data[q.id];
@@ -122,6 +128,18 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
       return;
     }
 
+    // Verificar mapa requerido
+    if (mapRequired && (!data.ubicacion_gps || data.ubicacion_gps.length === 0)) {
+      setCriticalErrors(["Debe seleccionar una ubicación en el mapa"]);
+      return;
+    }
+
+    // Verificar galería requerida
+    if (galleryRequired && (!data.fotografias || data.fotografias.length === 0)) {
+      setCriticalErrors(["Debe tomar al menos una fotografía"]);
+      return;
+    }
+
     if (onSubmit) {
       onSubmit(data);
     } else {
@@ -129,13 +147,22 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
     }
   };
 
-  const handleSelectPoints = (questionId: string) => {
+  const handleSelectPoints = () => {
     router.push({
       pathname: "/select-coordinates" as any,
       params: {
-        initialPoints: JSON.stringify(getValues(questionId) || []),
-        callbackId: questionId,
+        initialPoints: JSON.stringify(getValues("ubicacion_gps") || []),
+        callbackId: "ubicacion_gps",
       },
+    });
+  };
+
+  // Filtrar preguntas que dependen de otras
+  const getVisibleQuestions = (formValues: Record<string, any>) => {
+    return questions.filter(question => {
+      if (!question.dependsOn) return true;
+      const dependsValue = formValues[question.dependsOn.field];
+      return dependsValue === question.dependsOn.value;
     });
   };
 
@@ -179,7 +206,7 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
       );
     }
 
-    // Checkbox (múltiple selección)
+    // Checkbox
     if (question.type === "checkbox") {
       const options = Array.isArray(question.options) 
         ? question.options.map(opt => typeof opt === 'string' ? { label: opt, value: opt } : opt)
@@ -222,50 +249,6 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
               required={question.required}
               error={errors[question.id]?.message as string}
             />
-          )}
-        />
-      );
-    }
-
-    // Mapa
-    if (question.type === "map") {
-      return (
-        <Controller
-          key={question.id}
-          control={control}
-          name={question.id}
-          rules={{
-            required: question.required ? "Debe seleccionar al menos un punto" : false,
-            validate: (value: Point[]) => {
-              if (question.required && (!value || value.length === 0)) {
-                return "Debe seleccionar al menos un punto";
-              }
-              return true;
-            },
-          }}
-          render={({ field: { value } }) => (
-            <ThemedView style={styles.mapSection}>
-              <ThemedText type="label" style={styles.labelText}>
-                {question.label}
-                {question.required && <ThemedText style={styles.requiredAsterisk}> *</ThemedText>}
-              </ThemedText>
-              <ThemedView style={styles.pointsSummary}>
-                <ThemedText type="defaultSemiBold">
-                  {value && value.length > 0
-                    ? `📍 ${value.length} ${value.length === 1 ? "punto seleccionado" : "puntos seleccionados"}`
-                    : "No se han seleccionado coordenadas"}
-                </ThemedText>
-              </ThemedView>
-              <ThemedButton
-                title={value && value.length > 0 ? "Modificar Coordenadas" : "Seleccionar en Mapa"}
-                onPress={() => handleSelectPoints(question.id)}
-                variant={value && value.length > 0 ? "secondary" : "primary"}
-                style={styles.mapButton}
-              />
-              {errors[question.id] && (
-                <ThemedText style={styles.errorText}>{errors[question.id]?.message as string}</ThemedText>
-              )}
-            </ThemedView>
           )}
         />
       );
@@ -328,6 +311,7 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
           {title}
         </ThemedText>
 
+        {/* ERRORES CRÍTICOS */}
         {criticalErrors.length > 0 && (
           <ThemedView style={styles.criticalErrorContainer}>
             {criticalErrors.map((error, index) => (
@@ -338,7 +322,82 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
           </ThemedView>
         )}
 
+        {/* ============ MAPA (SIEMPRE PRESENTE) ============ */}
+        <ThemedView style={styles.mapSection}>
+          <ThemedText type="label" style={styles.labelText}>
+            {mapLabel}
+            {mapRequired && <ThemedText style={styles.requiredAsterisk}> *</ThemedText>}
+          </ThemedText>
+          <Controller
+            control={control}
+            name="ubicacion_gps"
+            rules={{
+              required: mapRequired ? "Debe seleccionar al menos un punto" : false,
+              validate: (value: Point[]) => {
+                if (mapRequired && (!value || value.length === 0)) {
+                  return "Debe seleccionar al menos un punto";
+                }
+                return true;
+              },
+            }}
+            render={({ field: { value } }) => (
+              <>
+                <ThemedView style={styles.pointsSummary}>
+                  <ThemedText type="defaultSemiBold">
+                    {value && value.length > 0
+                      ? `📍 ${value.length} ${value.length === 1 ? "punto seleccionado" : "puntos seleccionados"}`
+                      : "No se han seleccionado coordenadas"}
+                  </ThemedText>
+                </ThemedView>
+                <ThemedButton
+                  title={value && value.length > 0 ? "Modificar Ubicación" : "Seleccionar en Mapa"}
+                  onPress={handleSelectPoints}
+                  variant={value && value.length > 0 ? "secondary" : "primary"}
+                  style={styles.mapButton}
+                />
+                {errors.ubicacion_gps && (
+                  <ThemedText style={styles.errorText}>
+                    {errors.ubicacion_gps?.message as string}
+                  </ThemedText>
+                )}
+              </>
+            )}
+          />
+        </ThemedView>
+
+        {/* ============ PREGUNTAS DEL FORMULARIO ============ */}
         {visibleQuestions.map(renderQuestion)}
+
+        {/* ============ GALERÍA DE FOTOS (SIEMPRE PRESENTE) ============ */}
+        <ThemedView style={styles.gallerySection}>
+          <ThemedText type="label" style={styles.labelText}>
+            {galleryLabel}
+            {galleryRequired && <ThemedText style={styles.requiredAsterisk}> *</ThemedText>}
+          </ThemedText>
+          <Controller
+            control={control}
+            name="fotografias"
+            rules={{
+              required: galleryRequired ? "Debe tomar al menos una fotografía" : false,
+              validate: (value: string[]) => {
+                if (galleryRequired && (!value || value.length === 0)) {
+                  return "Debe tomar al menos una fotografía";
+                }
+                return true;
+              },
+            }}
+            render={({ field: { onChange, value } }) => (
+              <ThemedImageGallery
+                label=""
+                value={value || []}
+                onChange={onChange}
+                required={galleryRequired}
+                error={errors.fotografias?.message as string}
+                maxImages={maxImages}
+              />
+            )}
+          />
+        </ThemedView>
 
         <ThemedButton
           title="Enviar Solicitud"
@@ -349,6 +408,9 @@ export function FormRequest({ title, questions, onSubmit, onCriticalFail }: Form
     </ScrollView>
   );
 }
+
+// Componentes auxiliares (ThemedRadioGroup, ThemedCheckbox, ThemedTable)
+// ... (incluir los componentes que ya tienes)
 
 const styles = StyleSheet.create({
   container: {
@@ -374,11 +436,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   labelText: {
-    marginBottom: 5,
+    marginBottom: 8,
   },
-  submitButton: {
-    marginTop: 20,
-    marginBottom: 40,
+  requiredAsterisk: {
+    color: "red",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   mapSection: {
     marginVertical: 10,
@@ -387,15 +450,6 @@ const styles = StyleSheet.create({
   mapButton: {
     marginTop: 5,
   },
-  requiredAsterisk: {
-    color: "red",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  errorText: {
-    color: "#ff4444",
-    fontSize: 12,
-  },
   pointsSummary: {
     padding: 15,
     borderRadius: 10,
@@ -403,6 +457,17 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderWidth: 1,
     borderColor: "#ccc",
+  },
+  gallerySection: {
+    marginVertical: 10,
+  },
+  submitButton: {
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  errorText: {
+    color: "#ff4444",
+    fontSize: 12,
   },
   criticalErrorContainer: {
     backgroundColor: "#ffebee",
